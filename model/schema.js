@@ -1,19 +1,17 @@
 var mongoose = require('mongoose')
 var logger = require('../helper/logger')
 
-mongoose.connect(process.env.MONGODB_URI, 
-//     {
-//     maxPoolSize: 50,
-//     wtimeoutMS: 2500,
-//     useNewUrlParser: true
-// }
-).then(() => {
-    logger.info(`DB Connection Established`)
-    console.log("DB Connected")
-}).catch(err => {
-    logger.error(`DB Connection Fail | ${err.stack}`)
-    console.log(err)
-})
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+MongoMemoryServer.create().then((mongoServer) => {
+    mongoose.connect(mongoServer.getUri()).then(() => {
+        logger.info(`DB Connection Established to memory server`);
+        console.log("DB Connected to Memory Server");
+    }).catch(err => {
+        logger.error(`DB Connection Fail | ${err.stack}`);
+        console.log(err);
+    });
+});
 
 const User = new mongoose.Schema({
     firstName: {
