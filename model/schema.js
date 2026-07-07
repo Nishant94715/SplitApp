@@ -1,17 +1,26 @@
 var mongoose = require('mongoose')
 var logger = require('../helper/logger')
 
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
-MongoMemoryServer.create().then((mongoServer) => {
-    mongoose.connect(mongoServer.getUri()).then(() => {
-        logger.info(`DB Connection Established to memory server`);
-        console.log("DB Connected to Memory Server");
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+    mongoose.connect(process.env.MONGODB_URI).then(() => {
+        logger.info(`DB Connection Established to Atlas`);
+        console.log("DB Connected to Atlas");
     }).catch(err => {
         logger.error(`DB Connection Fail | ${err.stack}`);
         console.log(err);
     });
-});
+} else {
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    MongoMemoryServer.create().then((mongoServer) => {
+        mongoose.connect(mongoServer.getUri()).then(() => {
+            logger.info(`DB Connection Established to memory server`);
+            console.log("DB Connected to Memory Server");
+        }).catch(err => {
+            logger.error(`DB Connection Fail | ${err.stack}`);
+            console.log(err);
+        });
+    });
+}
 
 const User = new mongoose.Schema({
     firstName: {
